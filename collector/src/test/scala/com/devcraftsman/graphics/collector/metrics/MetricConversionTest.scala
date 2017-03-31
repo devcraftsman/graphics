@@ -16,8 +16,8 @@ class MetricConversionTest extends WordSpec with Matchers {
   "Metric parse" must {
 
     "convert correct string to valid Metric instance" in {
-      val expected = Metric("test.metric.rate", (1490622061L, 5.3f))
-      val input = "test.metric.rate 1490622061 5.30"
+      val expected = Metric("test.metric.rate", (5.3f, 1490622061L))
+      val input = "test.metric.rate 5.30 1490622061\n"
 
       val parsedTry = Metric.parse(input)
 

@@ -7,14 +7,14 @@ import akka.http.scaladsl.unmarshalling.PredefinedFromEntityUnmarshallers
 import scala.util.{Failure, Success, Try}
 
 
-case class Metric(name: String, sample: (Long, Float))
+case class Metric(name: String, sample: (Float, Long))
 
 object Metric {
 
-  val pattern = "([a-zA-Z]+(?:\\.[a-zA-Z]+)*)\\s(\\d+)\\s(\\d+(?:\\.\\d+)?)".r
+  val pattern = "([a-zA-Z]+(?:\\.[a-zA-Z]+)*)\\s(\\d+(?:\\.\\d+)?)\\s(\\d+)\\n".r
 
   def parse(s: String): Try[Metric] = s match {
-    case pattern(k, t, v) => Success(new Metric(k, (t.toLong, v.toFloat)))
+    case pattern(k, v, t) => Success(new Metric(k, (v.toFloat, t.toLong)))
     case _ => Failure(new ParseException("Unable to parse request", 0))
   }
 
