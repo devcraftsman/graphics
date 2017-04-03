@@ -1,12 +1,14 @@
 package com.devcraftsman.graphics.collector.server
 
+import java.io.File
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
-import com.devcraftsman.graphics.collector.metrics._
+import com.devcraftsman.graphics.collector.metrics.{MetricRepo, _}
 
 import scala.io.StdIn
 import scala.util.{Failure, Success, Try}
@@ -15,6 +17,9 @@ import scala.util.{Failure, Success, Try}
 object WebServer {
 
   implicit val metricUnmarshaller = Metric.unMarshaller
+
+  implicit val fileRepo = new File(getClass.getClassLoader.getResource("data.txt").getFile)
+  val repo = MetricRepo.fileRepo
 
 
   val route = path("ping") {
@@ -25,7 +30,10 @@ object WebServer {
     post {
       decodeRequest {
         entity(as[Try[Metric]]) {
-          case Success(_) => complete("OK")
+          case Success(metric) => {
+            repo.append(metric)
+            complete("OK")
+          }
           case Failure(e) => complete(HttpResponse(BadRequest, entity = "Error: " + e.getLocalizedMessage))
         }
       }

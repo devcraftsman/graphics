@@ -18,6 +18,8 @@ object Metric {
     case _ => Failure(new ParseException("Unable to parse request", 0))
   }
 
+  def serialize(m: Metric): String = new String(s"${m.name} ${m.sample._1} ${m.sample._2}\n")
+
   val unMarshaller = PredefinedFromEntityUnmarshallers.stringUnmarshaller.map(parse(_))
 
 
