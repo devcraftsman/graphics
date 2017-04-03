@@ -1,6 +1,5 @@
 package com.devcraftsman.graphics.collector.server
 
-import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.scalatest.{Matchers, WordSpec}
@@ -13,7 +12,7 @@ import org.scalatest.{Matchers, WordSpec}
   **/
 class WebServerTest extends WordSpec with Matchers with ScalatestRouteTest {
 
-  val route = WebServer.route;
+  val route = new WebServer().route;
 
   "The service" should {
 

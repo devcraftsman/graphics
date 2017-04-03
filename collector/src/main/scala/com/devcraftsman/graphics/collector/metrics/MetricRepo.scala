@@ -11,18 +11,20 @@ import java.io._
   **/
 trait MetricRepo[A] {
 
-  def append(m: Metric)(implicit a: A): Unit;
+  def append(m: Metric)(implicit a: A): Metric;
+
 
 }
 
 object MetricRepo {
 
   class FileMetricRepo extends MetricRepo[File] {
-    override def append(m: Metric)(implicit fileRepo: File) = {
-      val writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileRepo, true), "UTF-8"))
+    override def append(m: Metric)(implicit dataFile: File) = {
+      val writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(dataFile, true), "UTF-8"))
       writer.append(Metric.serialize(m))
       writer.flush()
       writer.close()
+      m
     }
   }
 

@@ -1,25 +1,32 @@
 package com.devcraftsman.graphics.collector.server
 
 import java.io.File
+import java.nio.file.StandardOpenOption._
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.server.Directives._
-import akka.stream.ActorMaterializer
+import akka.http.scaladsl.server.Directives.{entity, _}
+import akka.stream.scaladsl.{FileIO, Flow, Keep, Sink, Source}
+import akka.stream.{ActorMaterializer, IOResult}
+import akka.util.ByteString
 import com.devcraftsman.graphics.collector.metrics.{MetricRepo, _}
 
+import scala.concurrent.Future
 import scala.io.StdIn
 import scala.util.{Failure, Success, Try}
 
 
-object WebServer {
+class WebServer {
 
   implicit val metricUnmarshaller = Metric.unMarshaller
+  implicit val system = ActorSystem("collector-system")
+  implicit val materializer = ActorMaterializer()
 
-  implicit val fileRepo = new File(getClass.getClassLoader.getResource("data.txt").getFile)
+  implicit val dataFile = new File(getClass.getClassLoader.getResource("data.txt").getFile)
   val repo = MetricRepo.fileRepo
+
 
 
   val route = path("ping") {
@@ -38,17 +45,34 @@ object WebServer {
         }
       }
     }
+  } ~ path("collectFlow") {
+    post {
+      decodeRequest {
+        entity(as[Try[Metric]]) {
+          case Success(m) => {
+            val saving = Source.single(m).runWith(lineSink)
+            onComplete(saving) { ioResult =>
+              complete("OK - FLOW")
+            }
+
+          }
+          case Failure(e) => complete(HttpResponse(BadRequest, entity = "Error: " + e.getLocalizedMessage))
+        }
+      }
+    }
   }
+
+  private val lineSink: Sink[Metric, Future[IOResult]] =
+    Flow[Metric]
+      .map(m => ByteString(Metric.serialize(m)))
+      .toMat(FileIO.toPath(dataFile.toPath, Set(APPEND, CREATE)))(Keep.right)
+
 
 
   def start() {
 
-    implicit val system = ActorSystem("my-system")
-    implicit val materializer = ActorMaterializer()
     // needed for the future flatMap/onComplete in the end
     implicit val executionContext = system.dispatcher
-
-
     val bindingFuture = Http().bindAndHandle(route, "localhost", 8080)
 
     println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
