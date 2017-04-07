@@ -9,6 +9,11 @@ import com.devcraftsman.graphics.collector.server.WebServer
   * see: [http://www.apache.org/licenses/LICENSE-2.0]
   **/
 object Main extends App {
+
+  // init database repo
+  Config.repo.init();
+
+  // start server
   val server = new WebServer()
   server.start()
 }

@@ -16,6 +16,7 @@ lazy val collector = (project in file("collector"))
   .settings(
     name := "graphics-collector",
     commonSettings,
+    libraryDependencies ++= Seq(hsqlDb, hikariCP, slf4j, slick),
     libraryDependencies ++= Seq(akkaHttp, akkaHttpTest),
     libraryDependencies ++= Seq(scalactic, scalaTest),
     mainClass in(Compile, run) := Some("com.devcraftsman.graphics.collector.Main")
