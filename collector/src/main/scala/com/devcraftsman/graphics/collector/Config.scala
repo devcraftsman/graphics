@@ -1,9 +1,8 @@
 package com.devcraftsman.graphics.collector
 
-import java.io.File
-
-import com.devcraftsman.graphics.collector.repo.FileMetricRepoComponent
+import com.devcraftsman.graphics.collector.repo.HsqlMetricRepoComponent
 import com.typesafe.config.ConfigFactory
+import slick.jdbc.HsqldbProfile.api._
 
 import scala.util.Properties
 
@@ -13,7 +12,7 @@ import scala.util.Properties
   * This software is licensed under the Apache 2 license
   * see: [http://www.apache.org/licenses/LICENSE-2.0]
   **/
-object Config extends /*HsqlMetricRepoComponent */ FileMetricRepoComponent {
+object Config extends HsqlMetricRepoComponent {
 
   class MyConfig(fileNameOption: Option[String] = None) {
 
@@ -28,11 +27,9 @@ object Config extends /*HsqlMetricRepoComponent */ FileMetricRepoComponent {
 
   }
 
-  // actual config api
-  private val config = new MyConfig()
-  val properties = config.cfg
+  val db: Database = Database.forConfig("graphics.collector.hsqlMem")
+  val config = new MyConfig()
 
-  override val dataFile: File = new File(getClass.getClassLoader.getResource(config.envOrElseConfig("graphics.collector.fileDataRepo")).getFile)
 
 
 }
